@@ -2,24 +2,24 @@ package board;
 
 import java.util.HashMap;
 
-import board.Piece.PIECE;
+import pieces.Piece;
 
-public class Board {
+public class Board<TYPE> {
 	
-	private HashMap<String,Piece> board;
+	private HashMap<String, Piece<TYPE>> board;
 	private int boardSize;
 	
 	public Board(int size) {
-		board = new HashMap<String, Piece>();
+		board = new HashMap<String, Piece<TYPE>>();
 		boardSize = size;
 	}
 	
-	public void setValue(int x, int y, PIECE value) {
+	public void setValue(int x, int y, TYPE value) {
 		if(x >= 0 && x < boardSize && y >= 0 && y < boardSize) {
 			String key = keyGenerator(x,y);
-			Piece temp = board.get(key);
+			Piece<TYPE> temp = board.get(key);
 			if(temp == null) {
-				board.put(key, new Piece(value));
+				board.put(key, new Piece<TYPE>(value));
 			}
 			else {
 				board.get(key).setValue(value);
@@ -35,8 +35,8 @@ public class Board {
 	}
 	
 	private boolean isBlank(String key) {
-		Piece value = board.get(key);
-		if(value != null && value.getValue() == PIECE.blank) {
+		Piece<TYPE> value = board.get(key);
+		if(value != null && value.isBlank()) {
 			return true;
 		}
 		else {
@@ -44,10 +44,10 @@ public class Board {
 		}
 	}
 	
-	public PIECE getValue(int x, int y) {
+	public TYPE getValue(int x, int y) {
 		if(x >= 0 && x < boardSize && y >= 0 && y < boardSize) {
 			if(isBlank(keyGenerator(x,y))) {
-				return PIECE.blank;
+				return (new Piece<TYPE>()).getValue();
 			}
 			else {
 				return board.get(keyGenerator(x,y)).getValue();
