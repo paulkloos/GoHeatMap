@@ -7,10 +7,11 @@ public class Piece<TYPE> {
 	
 	public Piece() {
 		list = new ArrayList<TYPE>();
+		list.set(0, null);
 	}
 	
 	public Piece(TYPE value) {
-		super();
+		list = new ArrayList<TYPE>();
 		list.add(value);
 	}
 	
@@ -31,6 +32,11 @@ public class Piece<TYPE> {
 	}
 	
 	public boolean isBlank() {
-		return false;
+		if(list.get(0) == null) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 }

@@ -1,5 +1,5 @@
 package go;
 
 public enum STONE {
-	blank, black, white
+	black, white
 }

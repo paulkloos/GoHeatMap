@@ -1,5 +1,6 @@
 package board;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import pieces.Piece;
@@ -7,10 +8,12 @@ import pieces.Piece;
 public class Board<TYPE> {
 	
 	private HashMap<String, Piece<TYPE>> board;
+	private ArrayList<int[]> playedAreas;
 	private int boardSize;
 	
 	public Board(int size) {
 		board = new HashMap<String, Piece<TYPE>>();
+		playedAreas = new ArrayList<int[]>();
 		boardSize = size;
 	}
 	
@@ -20,6 +23,8 @@ public class Board<TYPE> {
 			Piece<TYPE> temp = board.get(key);
 			if(temp == null) {
 				board.put(key, new Piece<TYPE>(value));
+				int[] coords = {x,y};
+				playedAreas.add(coords);
 			}
 			else {
 				board.get(key).setValue(value);
@@ -46,11 +51,12 @@ public class Board<TYPE> {
 	
 	public TYPE getValue(int x, int y) {
 		if(x >= 0 && x < boardSize && y >= 0 && y < boardSize) {
-			if(isBlank(keyGenerator(x,y))) {
-				return (new Piece<TYPE>()).getValue();
+			String key = keyGenerator(x,y); 
+			if(isBlank(key)) {
+				return null;
 			}
 			else {
-				return board.get(keyGenerator(x,y)).getValue();
+				return board.get(key).getValue();
 			}
 		}
 		else {
@@ -59,7 +65,15 @@ public class Board<TYPE> {
 	}
 	
 	public int getPiecesPlayed() {
-		return board.size();
+		return playedAreas.size();
+	}
+	
+	public int getBoardSize() {
+		return boardSize;
+	}
+	
+	public int[] getBoardCoords(int index) {
+		return playedAreas.get(index);
 	}
 
 }
