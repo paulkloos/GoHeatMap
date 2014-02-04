@@ -23,6 +23,10 @@ public class Piece<TYPE> {
 		list.add(0, value);
 	}
 	
+	public void setValue(int index, TYPE value) {
+		list.set(index, value);		
+	}
+	
 	public int getHistoryCount() {
 		return list.size();
 	}

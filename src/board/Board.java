@@ -31,7 +31,28 @@ public class Board<TYPE> {
 			}
 		}
 		else {
-			throw new IndexOutOfBoundsException();
+			throw new IndexOutOfBoundsException("board index does not exist");
+		}
+	}
+	
+	public void setValue(int x, int y, int index, TYPE value) {
+		if(x >= 0 && x < boardSize && y >= 0 && y < boardSize) {
+			String key = keyGenerator(x,y);
+			Piece<TYPE> temp = board.get(key);
+			if(temp == null && index == 0) {
+				board.put(key, new Piece<TYPE>(value));
+				int[] coords = {x,y};
+				playedAreas.add(coords);
+			}
+			else if(temp == null) {
+				throw new IndexOutOfBoundsException("Index in piece history does not exist");
+			}
+			else {
+				board.get(key).setValue(index,value);
+			}
+		}
+		else {
+			throw new IndexOutOfBoundsException("board index does not exist");
 		}
 	}
 	
@@ -49,14 +70,14 @@ public class Board<TYPE> {
 		}
 	}
 	
-	public TYPE getValue(int x, int y) {
+	public Piece<TYPE> getValue(int x, int y) {
 		if(x >= 0 && x < boardSize && y >= 0 && y < boardSize) {
 			String key = keyGenerator(x,y); 
 			if(isBlank(key)) {
 				return null;
 			}
 			else {
-				return board.get(key).getValue();
+				return board.get(key);
 			}
 		}
 		else {
