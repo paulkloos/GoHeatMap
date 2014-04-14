@@ -1,46 +1,60 @@
 package pieces;
 
-import java.util.ArrayList;
+import go.STONE;
 
-public class Piece<TYPE> {
-	protected ArrayList<TYPE> list;
+public class Piece {
+	protected STONE value;
+	private int liberties;
+	private Integer id;
 	
 	public Piece() {
-		list = new ArrayList<TYPE>();
-		list.set(0, null);
+		setValue(null);
+		liberties = 0;
 	}
 	
-	public Piece(TYPE value) {
-		list = new ArrayList<TYPE>();
-		list.add(value);
+	public Piece(STONE value) {
+		setValue(value);
+		liberties = 4;
 	}
 	
-	public TYPE getValue() {
-		return list.get(0);
+	public STONE getValue() {
+		return value;
 	}
 	
-	public void setValue(TYPE value) {
-		list.add(0, value);
+	public void setValue(STONE value) {
+		this.value = value;
 	}
 	
-	public void setValue(int index, TYPE value) {
-		list.set(index, value);		
+	public void setLiberties(int count) {
+		liberties = count;
 	}
 	
-	public int getHistoryCount() {
-		return list.size();
+	public int getLiberties() {
+		return liberties;
 	}
 	
-	public TYPE getValue(int index) {
-		return list.get(index);
+	public void incrementLiberty() {
+		liberties++;
+	}
+	
+	public void decrementLiberty() {
+		liberties--;
 	}
 	
 	public boolean isBlank() {
-		if(list.get(0) == null) {
+		if (value == null) {
 			return true;
 		}
 		else {
 			return false;
 		}
+	}
+	
+	public void setGroup(Integer value) {
+		id = value;
+	}
+	
+	public Integer getGroup() {
+		return id;
 	}
 }

@@ -1,50 +1,44 @@
 package heat;
 
 import pieces.Piece;
+import pieces.Record;
 import board.Board;
 import go.STONE;
 
 public class Map {
 	
-	private Board<STONE> board;
-	private Board<Double> heatBoard;
+	private Board board;
+	private Double[][] heatBoard;
 	private STONE type;
+	private int size;
 	
-	public Map(STONE type, Board<STONE> board) {
+	public Map(STONE type, Board board) {
 		this.board = board;
 		this.type = type;
+		size = board.getBoardSize();
 		clearBoard();
 	}
 	
 	public void update(int radius) {
-		int size = board.getPiecesPlayed();
 		clearBoard();
-		for(int index = 0; index < size; index++) {
-			int[] coords = board.getBoardCoords(index);
-			Piece<STONE> temp = board.getValue(coords[0], coords[1]);
-			
-			if(temp.getValue() == type) {
-				for(int x = coords[0]-radius; x < coords[0]+radius; x++) {
-					if(x < 0) {
-						continue;
-					}
-					else if(x > board.getBoardSize()) {
-						break;
-					}
-					for(int y = coords[1]-radius; y < coords[1]+radius; y++) {
-						if(y < 0) {
+		for (int x = 0; x < size; x++) {
+			for (int y = 0; y < size; y++) {
+				Piece temp = board.getValue(x, y);
+				if (temp.getValue() == type) {
+					for (int x2 = x-radius; x2 < x+radius && x2 < size; x2++) {
+						if (x2 < 0) {
 							continue;
 						}
-						else if(y > board.getBoardSize()) {
-							break;
-						}//subtracted 1 from each coord to make zero based
-						if(board.getValue(x, y).isBlank()) {//set value if no current value
-							if(heatBoard.getValue(x, y).isBlank()) {
-								heatBoard.setValue(x, y, strength(Math.abs((double)(coords[0]-x-1)), Math.abs((double)(coords[1]-y-1))));
+						for(int y2 = y-radius; y2 < y+radius && y2 < size; y2++) {
+							if (y2 < 0) {
+								continue;
+							}
+							if (board.getValue(x2, y2).getValue() == null) {
+								heatBoard[x][y] = strength(Math.abs((double)(x-x2)), Math.abs((double)(y-y2)));
 							}
 							else {//sum value if one already exists
-								Double current = heatBoard.getValue(x, y).getValue();
-								heatBoard.setValue(x, y, 0, current+strength(Math.abs((double)(coords[0]-x-1)), Math.abs((double)(coords[1]-y-1))));
+								Double current = heatBoard[x][y];
+								heatBoard[x][y] = current+strength(Math.abs((double)(x-x2)), Math.abs((double)(y-y2)));
 							}
 						}
 					}
@@ -54,14 +48,14 @@ public class Map {
 	}
 	
 	private Double strength(Double absx, Double absy) {
-		return Math.pow(0.5D, (absx+absy));
+		return Math.pow(0.5D, (absx+absy-1));
 	}
 	
 	private void clearBoard() {
-		heatBoard = new Board<Double>(board.getBoardSize());
+		heatBoard = new Double[size][size];
 	}
 	
-	public Board<Double> getHeatMap() {
+	public Double[][] getHeatMap() {
 		return heatBoard;
 	}
 

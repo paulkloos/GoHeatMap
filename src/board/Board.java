@@ -1,100 +1,136 @@
 package board;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import go.STONE;
 
+import java.util.Hashtable;
+import java.util.Vector;
+
+import pieces.Grouping;
 import pieces.Piece;
+import pieces.Record;
 
-public class Board<TYPE> {
+public class Board {
 	
-	private HashMap<String, Piece<TYPE>> board;
-	private ArrayList<int[]> playedAreas;
+	private Piece[][] board;
+	private Vector<Record> playedAreas;
 	private int boardSize;
+	private Hashtable<Integer,Grouping> groupings;
+	private Integer groupId;
 	
 	public Board(int size) {
-		board = new HashMap<String, Piece<TYPE>>();
-		playedAreas = new ArrayList<int[]>();
+		board = new Piece[size][size];
+		playedAreas = new Vector<Record>();
+		groupings = new Hashtable<Integer,Grouping>();
 		boardSize = size;
-	}
-	
-	public void setValue(int x, int y, TYPE value) {
-		if(x >= 0 && x < boardSize && y >= 0 && y < boardSize) {
-			String key = keyGenerator(x,y);
-			Piece<TYPE> temp = board.get(key);
-			if(temp == null) {
-				board.put(key, new Piece<TYPE>(value));
-				int[] coords = {x,y};
-				playedAreas.add(coords);
+		groupId = 1;
+		for (int x = 0; x < boardSize; x++) {
+			for (int y = 0; y < boardSize; y++) {
+				board[x][y] = new Piece();
 			}
-			else {
-				board.get(key).setValue(value);
-			}
-		}
-		else {
-			throw new IndexOutOfBoundsException("board index does not exist");
 		}
 	}
 	
-	public void setValue(int x, int y, int index, TYPE value) {
-		if(x >= 0 && x < boardSize && y >= 0 && y < boardSize) {
-			String key = keyGenerator(x,y);
-			Piece<TYPE> temp = board.get(key);
-			if(temp == null && index == 0) {
-				board.put(key, new Piece<TYPE>(value));
-				int[] coords = {x,y};
-				playedAreas.add(coords);
-			}
-			else if(temp == null) {
-				throw new IndexOutOfBoundsException("Index in piece history does not exist");
-			}
-			else {
-				board.get(key).setValue(index,value);
-			}
-		}
-		else {
-			throw new IndexOutOfBoundsException("board index does not exist");
-		}
+	public void setValue(int x, int y, STONE value) {
+		STONE[] stones;
+		getValue(x, y).setValue(value);
+		stones = updateLiberties(x,y);
+		setGroup(x, y, stones);
+		playedAreas.add(new Record(x,y,value));
+		//TODO: check for groups with 0 liberties
 	}
-	
-	private String keyGenerator(int x, int y) {
-		return "x"+x+"y"+y;
-	}
-	
-	private boolean isBlank(String key) {
-		Piece<TYPE> value = board.get(key);
-		if(value != null && value.isBlank()) {
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-	
-	public Piece<TYPE> getValue(int x, int y) {
-		if(x >= 0 && x < boardSize && y >= 0 && y < boardSize) {
-			String key = keyGenerator(x,y); 
-			if(isBlank(key)) {
-				return null;
-			}
-			else {
-				return board.get(key);
-			}
+			
+	public Piece getValue(int x, int y) {
+		if(x >= 0 && x < boardSize && y >= 0 && y < boardSize) { 
+			return board[x][y];
 		}
 		else {
 			throw new IndexOutOfBoundsException();
 		}
 	}
 	
+	private STONE[] updateLiberties(int x, int y) {
+		int liberties = 4;
+		STONE[] stones = new STONE[]{null,null,null,null};
+		STONE tmp;
+		for (int index = 0; index < 4; index++) {
+			int[] offsets = getOffset(index);
+			if ((tmp = getValue(x+offsets[0], y+offsets[1]).getValue()) != null) {
+				liberties--;
+				stones[index] = tmp;
+			}
+		}
+		getValue(x, y).setLiberties(liberties);
+		
+		if (getValue(x, y).getValue() != null) {
+			getValue(x, y-1).decrementLiberty();
+			getValue(x-1, y).decrementLiberty();
+			getValue(x+1, y).decrementLiberty();
+			getValue(x, y+1).decrementLiberty();
+		}
+		
+		return stones;
+	}
+	
+	private void setGroup(int x, int y, STONE[] stones) {
+		Piece current;
+		if ((current = getValue(x, y)).getValue() != null) {
+			Integer last = -1;
+			for (int index = 0; index < 4; index++) {
+				if (stones[index] == current.getValue()) {
+					last = current.getGroup();
+					addGroup(x, y, index, last);
+				}
+			}
+			if (last == -1) {
+				addGroup(x, y, last, last);
+			}
+		}
+		else {
+			//TODO: handle liberty grouping
+		}
+	}
+	
+	private void addGroup(int x, int y, int source, Integer groups) {
+		if (source == -1) {
+			groupings.put(groupId++, new Grouping(x, y, this));
+		}
+		else {
+			int[] offset = getOffset(source);//add the group of the current
+			groupings.get(getValue(x+offset[0], y+offset[1]).getGroup()).addGroup(groupings.get(getValue(x, y).getGroup()));	
+		}
+	}
+	
+	private int[] getOffset(int index) {
+		int[] value = new int[2];
+		switch (index) {
+			case 0:
+				value[0] = 0;//x
+				value[1] = -1;//y
+				break;
+			case 1:
+				value[0] = -1;//x
+				value[1] = 0;//y
+				break;
+			case 2:
+				value[0] = 1;//x
+				value[1] = 0;//y
+				break;
+			case 3:
+				value[0] = 0;//x
+				value[1] = 1; //y
+				break;
+		}		
+		return value;
+	}
 	public int getPiecesPlayed() {
 		return playedAreas.size();
+	}
+	
+	public Record getPlay(int index) {
+		return playedAreas.get(index);
 	}
 	
 	public int getBoardSize() {
 		return boardSize;
 	}
-	
-	public int[] getBoardCoords(int index) {
-		return playedAreas.get(index);
-	}
-
 }
