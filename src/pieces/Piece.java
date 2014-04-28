@@ -1,9 +1,9 @@
 package pieces;
 
-import go.STONE;
+import go.stone;
 
 public class Piece {
-	protected STONE value;
+	protected stone value;
 	private int liberties;
 	private Integer id;
 	
@@ -12,16 +12,16 @@ public class Piece {
 		liberties = 0;
 	}
 	
-	public Piece(STONE value) {
+	public Piece(stone value) {
 		setValue(value);
 		liberties = 4;
 	}
 	
-	public STONE getValue() {
+	public stone getValue() {
 		return value;
 	}
 	
-	public void setValue(STONE value) {
+	public void setValue(stone value) {
 		this.value = value;
 	}
 	

@@ -1,5 +1,7 @@
 package pieces;
 
+import go.stone;
+
 import java.util.Vector;
 
 import board.Board;
@@ -8,11 +10,13 @@ public class Grouping {
 	private Vector<int[]> list;
 	private int liberties;
 	private Board board;
+	private stone type;
 	
-	public Grouping(int x, int y, Board board) {
+	public Grouping(int x, int y, Board board, stone type) {
 		list.add(new int[]{x,y});
 		this.board = board;
 		liberties = board.getValue(x, y).getLiberties();
+		this.type = type;
 	}
 	
 	public void addGroup(Grouping group) {
@@ -42,5 +46,13 @@ public class Grouping {
 	
 	public void decrementLiberties() {
 		liberties--;
+	}
+	
+	public void setType(stone type) {
+		this.type = type;
+	}
+	
+	public stone getType() {
+		return type;
 	}
 }

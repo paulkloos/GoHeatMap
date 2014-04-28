@@ -1,6 +1,6 @@
 package board;
 
-import go.STONE;
+import go.stone;
 
 import java.util.Hashtable;
 import java.util.Vector;
@@ -16,6 +16,40 @@ public class Board {
 	private int boardSize;
 	private Hashtable<Integer,Grouping> groupings;
 	private Integer groupId;
+	private enum Direction{TOP(0),LEFT(1),RIGHT(2),BOTTOM(3), NONE(4);
+		private final int value;
+		Direction(int value){
+			this.value = value;
+		}
+		public Direction next() {
+			Direction next = NONE;//states: TOP -> LEFT -> RIGHT -> BOTTOM -> NONE
+			switch(this) {
+			case TOP:
+				next = LEFT;
+				break;
+			case LEFT:
+				next = RIGHT;
+				break;
+			case RIGHT:
+				next = BOTTOM;
+				break;
+			}
+			return next;
+		}
+		public int get() {
+			return value;
+		}
+	};
+	private enum Axis{X(0), Y(1);
+		private final int value;
+		Axis(int value) {
+			this.value = value;
+		}
+		public int get(){
+			return this.value;
+		}
+	};
+	
 	
 	public Board(int size) {
 		board = new Piece[size][size];
@@ -30,13 +64,23 @@ public class Board {
 		}
 	}
 	
-	public void setValue(int x, int y, STONE value) {
-		STONE[] stones;
-		getValue(x, y).setValue(value);
+	public void setValue(int x, int y, stone value) {
+		stone[] stones;
+		this.getValue(x, y).setValue(value);
 		stones = updateLiberties(x,y);
 		setGroup(x, y, stones);
 		playedAreas.add(new Record(x,y,value));
 		//TODO: check for groups with 0 liberties
+		Integer gid = this.getValue(x, y).getGroup();
+		Grouping group = groupings.get(gid);
+		if (group.getLiberties() < 1 && group.getType() != null) {
+			groupings.get(gid).setType(null);
+			int size = group.size();
+			for(int index = 0; index < size; index++) {//setting all peieces to blank
+				int[] coord = group.getItem(index);
+				this.getValue(coord[0], coord[1]).setValue(null);
+			}
+		}
 	}
 			
 	public Piece getValue(int x, int y) {
@@ -48,76 +92,90 @@ public class Board {
 		}
 	}
 	
-	private STONE[] updateLiberties(int x, int y) {
+	private stone[] updateLiberties(int x, int y) {
 		int liberties = 4;
-		STONE[] stones = new STONE[]{null,null,null,null};
-		STONE tmp;
-		for (int index = 0; index < 4; index++) {
+		stone[] stones = new stone[]{null,null,null,null};
+		stone tmp;
+		for (Direction index = Direction.TOP; index != Direction.NONE; index = index.next()) {
 			int[] offsets = getOffset(index);
-			if ((tmp = getValue(x+offsets[0], y+offsets[1]).getValue()) != null) {
+			if ((tmp = this.getValue(x+offsets[0], y+offsets[1]).getValue()) != null) {
 				liberties--;
-				stones[index] = tmp;
+				stones[index.get()] = tmp;
 			}
 		}
-		getValue(x, y).setLiberties(liberties);
+		this.getValue(x, y).setLiberties(liberties);
 		
-		if (getValue(x, y).getValue() != null) {
-			getValue(x, y-1).decrementLiberty();
-			getValue(x-1, y).decrementLiberty();
-			getValue(x+1, y).decrementLiberty();
-			getValue(x, y+1).decrementLiberty();
+		if (this.getValue(x, y).getValue() != null) {
+			this.getValue(x, y-1).decrementLiberty();
+			this.getValue(x-1, y).decrementLiberty();
+			this.getValue(x+1, y).decrementLiberty();
+			this.getValue(x, y+1).decrementLiberty();
 		}
 		
 		return stones;
 	}
 	
-	private void setGroup(int x, int y, STONE[] stones) {
+	private void setGroup(int x, int y, stone[] stones) {
 		Piece current;
 		if ((current = getValue(x, y)).getValue() != null) {
 			Integer last = -1;
-			for (int index = 0; index < 4; index++) {
-				if (stones[index] == current.getValue()) {
+			for (Direction index = Direction.TOP; index != Direction.NONE; index = index.next()) {
+				if (stones[index.get()] == current.getValue()) {
 					last = current.getGroup();
 					addGroup(x, y, index, last);
 				}
 			}
 			if (last == -1) {
-				addGroup(x, y, last, last);
+				addGroup(x, y, null, last);
 			}
 		}
 		else {
-			//TODO: handle liberty grouping
+			for (Direction index = Direction.TOP; index.get() < 4; index = index.next()) {
+				if (stones[index.get()] == null) {
+					int[] offset = getOffset(index);
+					Piece value;
+					if ((value = this.getValue(x + offset[Axis.X.get()], y + offset[Axis.Y.get()])).getLiberties() < 4) {
+						addGroup(x,y,index,value.getGroup());
+					}
+				}
+			}
+			
 		}
 	}
 	
-	private void addGroup(int x, int y, int source, Integer groups) {
-		if (source == -1) {
-			groupings.put(groupId++, new Grouping(x, y, this));
+	private void addGroup(int x, int y, Direction source, Integer groups) {
+		if (source == null) {
+			groupings.put(groupId++, new Grouping(x, y, this, this.getValue(x, y).getValue()));
 		}
 		else {
 			int[] offset = getOffset(source);//add the group of the current
-			groupings.get(getValue(x+offset[0], y+offset[1]).getGroup()).addGroup(groupings.get(getValue(x, y).getGroup()));	
+			groupings.get(this.getValue(x+offset[Axis.X.get()], y+offset[Axis.Y.get()]).getGroup()).addGroup(groupings.get(this.getValue(x, y).getGroup()));	
 		}
 	}
-	
-	private int[] getOffset(int index) {
+	/**
+	 * 
+	 * @param index
+	 * Value indicating a direction relative from the current space
+	 * @return
+	 */
+	private int[] getOffset(Direction index) {
 		int[] value = new int[2];
 		switch (index) {
-			case 0:
-				value[0] = 0;//x
-				value[1] = -1;//y
+			case TOP:
+				value[Axis.X.get()] = 0;//x
+				value[Axis.Y.get()] = -1;//y
 				break;
-			case 1:
-				value[0] = -1;//x
-				value[1] = 0;//y
+			case LEFT:
+				value[Axis.X.get()] = -1;//x
+				value[Axis.Y.get()] = 0;//y
 				break;
-			case 2:
-				value[0] = 1;//x
-				value[1] = 0;//y
+			case RIGHT:
+				value[Axis.X.get()] = 1;//x
+				value[Axis.Y.get()] = 0;//y
 				break;
-			case 3:
-				value[0] = 0;//x
-				value[1] = 1; //y
+			case BOTTOM:
+				value[Axis.X.get()] = 0;//x
+				value[Axis.Y.get()] = 1; //y
 				break;
 		}		
 		return value;

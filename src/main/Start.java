@@ -1,7 +1,6 @@
 package main;
 
-import pieces.Piece;
-import go.STONE;
+import go.stone;
 import heat.Map;
 import board.Board;
 
@@ -12,9 +11,9 @@ public class Start {
 	 */
 	public static void main(String[] args) {
 		Board goboard = new Board(9);
-		Map map = new Map(STONE.black,goboard);
-		goboard.setValue(5, 5, STONE.black);
-		goboard.setValue(3, 3, STONE.black);
+		Map map = new Map(stone.BLACK,goboard);
+		goboard.setValue(5, 5, stone.BLACK);
+		goboard.setValue(3, 3, stone.BLACK);
 		map.update(5);
 		
 		printBoard(map.getHeatMap());

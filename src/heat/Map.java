@@ -1,18 +1,17 @@
 package heat;
 
 import pieces.Piece;
-import pieces.Record;
 import board.Board;
-import go.STONE;
+import go.stone;
 
 public class Map {
 	
 	private Board board;
 	private Double[][] heatBoard;
-	private STONE type;
+	private stone type;
 	private int size;
 	
-	public Map(STONE type, Board board) {
+	public Map(stone type, Board board) {
 		this.board = board;
 		this.type = type;
 		size = board.getBoardSize();
@@ -25,20 +24,10 @@ public class Map {
 			for (int y = 0; y < size; y++) {
 				Piece temp = board.getValue(x, y);
 				if (temp.getValue() == type) {
-					for (int x2 = x-radius; x2 < x+radius && x2 < size; x2++) {
-						if (x2 < 0) {
-							continue;
-						}
-						for(int y2 = y-radius; y2 < y+radius && y2 < size; y2++) {
-							if (y2 < 0) {
-								continue;
-							}
+					for (int x2 = (x < radius)? 0 : x-radius; x2 < x+radius && x2 < size; x2++) {
+						for(int y2 = (y < radius)? 0 : y-radius; y2 < y+radius && y2 < size; y2++) {
 							if (board.getValue(x2, y2).getValue() == null) {
-								heatBoard[x][y] = strength(Math.abs((double)(x-x2)), Math.abs((double)(y-y2)));
-							}
-							else {//sum value if one already exists
-								Double current = heatBoard[x][y];
-								heatBoard[x][y] = current+strength(Math.abs((double)(x-x2)), Math.abs((double)(y-y2)));
+								heatBoard[x2][y2] += strength(Math.abs((double)(x-x2)), Math.abs((double)(y-y2)));
 							}
 						}
 					}

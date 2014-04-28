@@ -2,11 +2,13 @@ package server;
 
 import java.net.UnknownHostException;
 
+import board.Board;
+
 public class Server
 {
 	//private SocketFactory ssl; all ssl for future reference
 	
-	public void runServer(SourceFiles files)
+	public void runServer(Board files)
 	{
 		HTTPConnection conn;
 		try
