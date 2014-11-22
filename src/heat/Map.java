@@ -1,37 +1,89 @@
 package heat;
 
-import pieces.Piece;
+import java.util.Arrays;
+
+import pieces.Record;
 import board.Board;
-import go.stone;
+import go.Stone;
 
 public class Map {
 	
 	private Board board;
 	private Double[][] heatBoard;
-	private stone type;
-	private int size;
+	private Stone type;
+	private int boardSize;
 	
-	public Map(stone type, Board board) {
+	public Map(Stone type, Board board) {
 		this.board = board;
 		this.type = type;
-		size = board.getBoardSize();
+		boardSize = board.getBoardSize();
 		clearBoard();
 	}
 	
-	public void update(int radius) {
+	public void update() {
 		clearBoard();
-		for (int x = 0; x < size; x++) {
-			for (int y = 0; y < size; y++) {
-				Piece temp = board.getValue(x, y);
-				if (temp.getValue() == type) {
-					for (int x2 = (x < radius)? 0 : x-radius; x2 < x+radius && x2 < size; x2++) {
-						for(int y2 = (y < radius)? 0 : y-radius; y2 < y+radius && y2 < size; y2++) {
-							if (board.getValue(x2, y2).getValue() == null) {
-								heatBoard[x2][y2] += strength(Math.abs((double)(x-x2)), Math.abs((double)(y-y2)));
-							}
-						}
+		int size = board.getPiecesPlayed();
+		for (int index = 0; index < size; index++) {
+			Record temp = board.getPlay(index);
+			if (temp.getPiece() != type) {
+				continue;
+			}
+			int[] start = temp.getCoords();
+			Boolean blank;
+			//positive x/y
+			for (int indexx = start[0]+1; indexx < boardSize; indexx++) {
+				blank = true;
+				for (int indexy = start[1]; indexy < boardSize && blank; indexy++) {
+					if (board.getValue(indexx, indexy).getValue() != Stone.BLANK) {
+						blank = false;
 					}
-				}
+					else {
+						//calculate heat
+						heatBoard[indexx][indexy] += strength(Math.abs((double)(start[Board.X]-indexx)), Math.abs((double)(start[Board.Y]-indexy)));
+					}
+				}								
+			}
+			
+			//negative x/ positive y
+			for (int indexx = start[0]; indexx >= 0; indexx--) {
+				blank = true;
+				for (int indexy = start[1]+1; indexy < boardSize && blank; indexy++) {
+					if (board.getValue(indexx, indexy).getValue() != Stone.BLANK) {
+						blank = false;
+					}
+					else {
+						//calculate heat
+						heatBoard[indexx][indexy] += strength(Math.abs((double)(start[Board.X]-indexx)), Math.abs((double)(start[Board.Y]-indexy)));
+					}
+				}								
+			}
+			
+			//negative x/y
+			for (int indexx = start[0]-1; indexx >= 0; indexx--) {
+				blank = true;
+				for (int indexy = start[1]; indexy >= 0 && blank; indexy--) {
+					if (board.getValue(indexx, indexy).getValue() != Stone.BLANK) {
+						blank = false;
+					}
+					else {
+						//calculate heat
+						heatBoard[indexx][indexy] += strength(Math.abs((double)(start[Board.X]-indexx)), Math.abs((double)(start[Board.Y]-indexy)));
+					}
+				}								
+			}
+			
+			//positive x/ negative y
+			for (int indexx = start[0]; indexx < boardSize; indexx++) {
+				blank = true;
+				for (int indexy = start[1]-1; indexy >= 0 && blank; indexy--) {
+					if (board.getValue(indexx, indexy).getValue() != Stone.BLANK) {
+						blank = false;
+					}
+					else {
+						//calculate heat
+						heatBoard[indexx][indexy] += strength(Math.abs((double)(start[Board.X]-indexx)), Math.abs((double)(start[Board.Y]-indexy)));
+					}
+				}								
 			}
 		}
 	}
@@ -41,7 +93,10 @@ public class Map {
 	}
 	
 	private void clearBoard() {
-		heatBoard = new Double[size][size];
+		heatBoard = new Double[boardSize][boardSize];
+		for (Double[] row: heatBoard) {
+			Arrays.fill(row, 0.0);
+		}
 	}
 	
 	public Double[][] getHeatMap() {

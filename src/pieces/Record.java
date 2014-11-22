@@ -1,13 +1,13 @@
 package pieces;
 
-import go.stone;
+import go.Stone;
 
 public class Record {
 	private int x;
 	private int y;
-	private stone piece;
+	private Stone piece;
 	
-	public Record(int x, int y, stone piece) {
+	public Record(int x, int y, Stone piece) {
 		this.x = x;
 		this.y = y;
 		this.piece = piece;
@@ -17,7 +17,7 @@ public class Record {
 		return new int[]{x,y};
 	}
 	
-	public stone getPiece() {
+	public Stone getPiece() {
 		return piece;
 	}
 }

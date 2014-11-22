@@ -1,27 +1,27 @@
 package pieces;
 
-import go.stone;
+import go.Stone;
 
 public class Piece {
-	protected stone value;
+	protected Stone value;
 	private int liberties;
 	private Integer id;
 	
 	public Piece() {
-		setValue(null);
+		setValue(Stone.BLANK);
 		liberties = 0;
 	}
 	
-	public Piece(stone value) {
+	public Piece(Stone value) {
 		setValue(value);
 		liberties = 4;
 	}
 	
-	public stone getValue() {
+	public Stone getValue() {
 		return value;
 	}
 	
-	public void setValue(stone value) {
+	public void setValue(Stone value) {
 		this.value = value;
 	}
 	

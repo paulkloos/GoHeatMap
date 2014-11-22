@@ -1,6 +1,6 @@
 package server;
 
-import go.stone;
+import go.Stone;
 
 public class Message {
 	private String command;
@@ -38,12 +38,12 @@ public class Message {
 		return new int[]{x,y};
 	}
 	
-	public stone getPiece() {
+	public Stone getPiece() {
 		switch (piece) {
 		case "black":
-			return stone.BLACK;
+			return Stone.BLACK;
 		case "white":
-			return stone.WHITE;
+			return Stone.WHITE;
 		default:
 			return null;
 		}
